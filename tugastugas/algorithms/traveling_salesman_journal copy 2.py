@@ -27,6 +27,8 @@ import base64
 #     15: {"lat": -26.7326, "lon": -52.3919},
 # }
 
+# city_keys: List[int] = sorted(cities.keys())  # [1,2,...,15]
+
 # --------------------------
 # Distance: SIMPLE PLANAR (km)
 # --------------------------
@@ -36,10 +38,21 @@ def planar_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     dy = (lon2 - lon1) * km_per_deg
     return math.hypot(dx, dy)
 
+# Precompute distance dictionary dist[i][j]
+# dist: Dict[int, Dict[int, float]] = {}
+# for i in city_keys:
+#     dist[i] = {}
+#     for j in city_keys:
+#         if i == j:
+#             dist[i][j] = 0.0
+#         else:
+#             dist[i][j] = haversine_km(cities[i]["lat"], cities[i]["lon"],
+#                                       cities[j]["lat"], cities[j]["lon"])
+
 # --------------------------
 # GA primitives (operate on routes that are lists of numeric city keys)
 # --------------------------
-def route_length(route: List[int], dist: Dict[int, Dict[int, float]]) -> float:
+def route_length(route: List[int], dist: Dict[int, Dict[int, float]] = {}) -> float:
     total = 0.0
     n = len(route)
     for k in range(n):
@@ -93,10 +106,10 @@ def run_ga(
     mutation_rate: float = 0.08,
     seed: int = 42,
     verbose: bool = True
-) -> Tuple[Dict[int, Dict[str, object]], List[int], float, List[float]]:
+) -> Tuple[Dict[int, Dict[str, object]], List[int], float]:
     random.seed(seed)
 
-    # build distance matrix here using planar metric
+    # build distance matrix here using planar metric (function name unchanged)
     city_keys_local: List[int] = sorted(cities.keys())
     dist_local: Dict[int, Dict[int, float]] = {}
     for i in city_keys_local:
@@ -115,9 +128,6 @@ def run_ga(
     history = {}
     best_dist = min(fitnesses)
     best_route = population[fitnesses.index(best_dist)][:]
-
-    # record best per generation (include generation 0 initial)
-    best_cost_history: List[float] = [best_dist]
 
     for gen in range(1, generations + 1):
         # elitism: keep top elite_size
@@ -144,16 +154,14 @@ def run_ga(
             best_dist = gen_best
             best_route = population[fitnesses.index(gen_best)][:]
 
-        best_cost_history.append(best_dist)
-
         if verbose and (gen % max(1, generations // 10) == 0 or gen in (1, generations)):
             history[gen] = {'best_dist': best_dist, 'best_route': best_route}
             # print(f"Gen {gen:4d} | Best distance: {best_dist:.3f} km")
 
-    return history, best_route, best_dist, best_cost_history
+    return history, best_route, best_dist
 
 # --------------------------
-# Plotting helpers (return PNG base64 data URIs)
+# Plotting
 # --------------------------
 def _fig_to_base64(fig) -> str:
     """Helper: convert current matplotlib figure to a PNG base64 data URI."""
@@ -165,6 +173,10 @@ def _fig_to_base64(fig) -> str:
     return "data:image/png;base64," + b64
 
 def plot_cities(cities: Dict[int, Dict[str, float]], show: bool = True) -> str:
+    """
+    Plot cities (x = latitude, y = longitude) and return a PNG base64 data URI.
+    Returns: data URI string 'data:image/png;base64,...'
+    """
     city_keys_local: List[int] = sorted(cities.keys())
     lats = [cities[k]["lat"] for k in city_keys_local]
     lons = [cities[k]["lon"] for k in city_keys_local]
@@ -190,6 +202,10 @@ def plot_cities(cities: Dict[int, Dict[str, float]], show: bool = True) -> str:
 
 def plot_route(cities: Dict[int, Dict[str, float]], route: List[int], total_distance: float,
                show: bool = True) -> str:
+    """
+    Plot route (x = latitude, y = longitude) and return a PNG base64 data URI.
+    Returns: data URI string 'data:image/png;base64,...'
+    """
     ordered_lats = [cities[c]["lat"] for c in route] + [cities[route[0]]["lat"]]
     ordered_lons = [cities[c]["lon"] for c in route] + [cities[route[0]]["lon"]]
 
@@ -202,28 +218,6 @@ def plot_route(cities: Dict[int, Dict[str, float]], route: List[int], total_dist
     ax.set_xlabel("Latitude")
     ax.set_ylabel("Longitude")
     ax.set_title(f"Jarak Terpendek\nTotal distance: {total_distance:.3f} km")
-    ax.grid(True, linestyle="--", linewidth=0.4)
-    plt.tight_layout()
-
-    data_uri = _fig_to_base64(fig)
-
-    if show:
-        plt.show()
-    plt.close(fig)
-    return data_uri
-
-def plot_cost_history(best_cost_history: List[float], show: bool = True) -> str:
-    """
-    Plot cost (y) per generation (x). best_cost_history is a list where
-    best_cost_history[i] is the best distance after generation i (i=0..generations).
-    """
-    generations = list(range(len(best_cost_history)))
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    ax.plot(generations, best_cost_history, marker='o', linewidth=1)
-    ax.set_xlabel("Generation")
-    ax.set_ylabel("Cost (km)")
-    ax.set_title("Cost per Generation (Best-so-far)")
     ax.grid(True, linestyle="--", linewidth=0.4)
     plt.tight_layout()
 

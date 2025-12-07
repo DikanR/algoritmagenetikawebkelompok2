@@ -39,9 +39,11 @@ def index(request):
     generations = 20
     elite = 8
     tourn_k = 5
+    # crossover_rate = 0.0
+    # mutation_rate = 0.0
     crossover_rate = 0.6
     mutation_rate = 0.1
-    seed = 42
+    seed = 3
 
     # elite = 20
     # tourn_k = 7
@@ -78,7 +80,18 @@ def index(request):
                     "lon": 0.0
                 }
 
-    history, best_route, best_dist = tsp_ag.run_ga(
+    # history, best_route, best_dist = tsp_ag.run_ga(
+    #     cities=cities,
+    #     pop_size=pop_size,
+    #     generations=generations,
+    #     elite_size=elite,
+    #     tournament_k=tourn_k,
+    #     crossover_rate=crossover_rate,
+    #     mutation_rate=mutation_rate,
+    #     seed=seed
+    # )
+
+    history, best_route, best_dist, best_cost_history = tsp_ag.run_ga(
         cities=cities,
         pop_size=pop_size,
         generations=generations,
@@ -90,6 +103,7 @@ def index(request):
     )
     img_uri_cities = tsp_ag.plot_cities(cities, show=False)
     img_uri_routes = tsp_ag.plot_route(cities, best_route, best_dist, show=False)
+    img_uri_cost_history = tsp_ag.plot_cost_history(best_cost_history, show=False)
 
     history_last_key = list(history.keys())[-1]
     last_history = {}
@@ -111,5 +125,6 @@ def index(request):
         'best_dist': best_dist,
         'img_uri_cities': img_uri_cities,
         'img_uri_routes': img_uri_routes,
+        'img_uri_cost_history': img_uri_cost_history,
     }
     return render(request, 'traveling_salesman_problem.html', context)
