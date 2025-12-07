@@ -43,6 +43,12 @@ def index(request):
     mutation_rate = 0.1
     seed = 42
 
+    # elite = 20
+    # tourn_k = 7
+    # crossover_rate = 0.95
+    # mutation_rate = 0.12
+    # seed = 42
+
     lats = []
     lons = []
     if request.method == "POST":

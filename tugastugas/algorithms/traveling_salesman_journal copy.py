@@ -30,13 +30,16 @@ import base64
 # city_keys: List[int] = sorted(cities.keys())  # [1,2,...,15]
 
 # --------------------------
-# Distance: SIMPLE PLANAR (km)
+# Distance: Haversine (km)
 # --------------------------
-def planar_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    km_per_deg = 111.0  # rough conversion: 1 degree ~ 111 km (approx.)
-    dx = (lat2 - lat1) * km_per_deg
-    dy = (lon2 - lon1) * km_per_deg
-    return math.hypot(dx, dy)
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    R = 6371.0 # ini radius bumi dalam km
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi/2.0)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2.0)**2
+    return 2 * R * math.asin(math.sqrt(a))
 
 # Precompute distance dictionary dist[i][j]
 # dist: Dict[int, Dict[int, float]] = {}
@@ -106,24 +109,23 @@ def run_ga(
     mutation_rate: float = 0.08,
     seed: int = 42,
     verbose: bool = True
-) -> Tuple[Dict[int, Dict[str, object]], List[int], float]:
+) -> Tuple[List[int], float]:
     random.seed(seed)
 
-    # build distance matrix here using planar metric (function name unchanged)
-    city_keys_local: List[int] = sorted(cities.keys())
-    dist_local: Dict[int, Dict[int, float]] = {}
-    for i in city_keys_local:
-        dist_local[i] = {}
-        for j in city_keys_local:
+    city_keys: List[int] = sorted(cities.keys())
+    dist: Dict[int, Dict[int, float]] = {}
+    for i in city_keys:
+        dist[i] = {}
+        for j in city_keys:
             if i == j:
-                dist_local[i][j] = 0.0
+                dist[i][j] = 0.0
             else:
-                dist_local[i][j] = planar_km(cities[i]["lat"], cities[i]["lon"],
-                                                cities[j]["lat"], cities[j]["lon"])
+                dist[i][j] = haversine_km(cities[i]["lat"], cities[i]["lon"],
+                                        cities[j]["lat"], cities[j]["lon"])
 
-    n = len(city_keys_local)
-    population = [random_route(city_keys_local) for _ in range(pop_size)]
-    fitnesses = [route_length(r, dist_local) for r in population]
+    n = len(city_keys)
+    population = [random_route(city_keys) for _ in range(pop_size)]
+    fitnesses = [route_length(r, dist) for r in population]
 
     history = {}
     best_dist = min(fitnesses)
@@ -147,7 +149,7 @@ def run_ga(
             new_pop.append(child)
 
         population = new_pop
-        fitnesses = [route_length(r, dist_local) for r in population]
+        fitnesses = [route_length(r, dist) for r in population]
 
         gen_best = min(fitnesses)
         if gen_best < best_dist:
@@ -161,7 +163,7 @@ def run_ga(
     return history, best_route, best_dist
 
 # --------------------------
-# Plotting
+# Plotting: swapped axes (x=latitude, y=longitude)
 # --------------------------
 def _fig_to_base64(fig) -> str:
     """Helper: convert current matplotlib figure to a PNG base64 data URI."""
@@ -177,10 +179,10 @@ def plot_cities(cities: Dict[int, Dict[str, float]], show: bool = True) -> str:
     Plot cities (x = latitude, y = longitude) and return a PNG base64 data URI.
     Returns: data URI string 'data:image/png;base64,...'
     """
-    city_keys_local: List[int] = sorted(cities.keys())
-    lats = [cities[k]["lat"] for k in city_keys_local]
-    lons = [cities[k]["lon"] for k in city_keys_local]
-    labels = [str(k) for k in city_keys_local]
+    city_keys: List[int] = sorted(cities.keys())
+    lats = [cities[k]["lat"] for k in city_keys]
+    lons = [cities[k]["lon"] for k in city_keys]
+    labels = [str(k) for k in city_keys]
 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(1, 1, 1)
