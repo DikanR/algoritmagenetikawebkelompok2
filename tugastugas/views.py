@@ -1,9 +1,6 @@
-from django.http import HttpResponse
 from django.shortcuts import render
-from .algorithms import algoritma_genetika as ag
 from .algorithms import traveling_salesman_journal as tsp_ag
-import random
-from typing import Dict, List, Tuple
+from typing import Dict
 
 # def index(request):
 #     test = "ini adalah teks"
