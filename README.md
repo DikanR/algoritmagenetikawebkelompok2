@@ -5,6 +5,8 @@ M. Najwan
 Muhammad Faris
 Fathullah Affandi
 
+https://www.researchgate.net/publication/339409957_Genetic_Algorithm_An_Approach_on_Optimization
+
 Menggunakan
 - Django Framework (Python)
 - TailwindCSS Framework (CSS)
