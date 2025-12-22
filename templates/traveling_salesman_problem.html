@@ -56,7 +56,7 @@
                     {% csrf_token %}
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-200">Jumlah Kota</label>
+                            <label class="block text-sm font-medium text-slate-200">Jumlah Negara</label>
                             <input
                             value="{{ cities_count }}"
                             type="number"
@@ -88,7 +88,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         {% for key, value in cities.items %}
                             <div>
-                                <label class="block text-sm font-medium text-slate-200">City {{ key }}</label>
+                                <label class="block text-sm font-medium text-slate-200">Negara {{ key }}</label>
                                 <div class="inline-flex gap-2">
                                     <label class="block text-sm text-slate-200">Latitude</label>
                                     <input
@@ -167,13 +167,13 @@
                 {% if cities|length == 0 %}
                     <p class="text-md font-semibold text-slate-200">Menunggu input...</p>
                 {% else %}
-                    <p class="text-md font-semibold text-slate-200">Diketahui terdapat {{ cities_count }} kota dengan Longtitude dan Latitudenya: </p>
+                    <p class="text-md font-semibold text-slate-200">Diketahui terdapat {{ cities_count }} Negara dengan Longtitude dan Latitudenya: </p>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left mb-3 table-auto border-collapse">
                             <thead>
                                 <tr class="text-slate-300/80">
                                 {% for key, value in cities.items %}
-                                    <th class="px-4 py-2">City {{ key }}</th>
+                                    <th class="px-4 py-2">Negara {{ key }}</th>
                                 {% endfor %}
                                     <!-- <th class="px-4 py-2">Item</th>
                                     <th class="px-4 py-2">Berat</th>
@@ -196,7 +196,7 @@
                     </div>
 
                     <p class="text-md font-semibold text-slate-200">
-                        Bagaimana cara menemukan rute terpendek yang mengunjungi semua kota tepat satu kali dan kembali ke kota asal?
+                        Bagaimana cara menemukan rute terpendek yang mengunjungi semua Negara tepat satu kali dan kembali ke Negara asal?
                     </p>
                 {% endif %}
             </section>

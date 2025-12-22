@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from .algorithms import traveling_salesman_journal as tsp_ag
 from typing import Dict
+import csv
+from django.conf import settings
 
 # def index(request):
 #     test = "ini adalah teks"
@@ -17,24 +19,48 @@ from typing import Dict
 
 def index(request):
     # cities = {}
-    cities: Dict[int, Dict[str, float]] = {
-        1:  {"lat": -27.6126, "lon": -51.0233},
-        2:  {"lat": -26.5716, "lon": -52.3229},
-        3:  {"lat": -27.4087, "lon": -49.8220},
-        4:  {"lat": -27.2662, "lon": -49.7080},
-        5:  {"lat": -26.9985, "lon": -51.5528},
-        6:  {"lat": -27.0754, "lon": -52.9808},
-        7:  {"lat": -26.8794, "lon": -52.8568},
-        8:  {"lat": -27.6963, "lon": -48.8243},
-        9:  {"lat": -26.8430, "lon": -53.5758},
-        10: {"lat": -26.7810, "lon": -49.3593},
-        11: {"lat": -27.4960, "lon": -48.6598},
-        12: {"lat": -26.9155, "lon": -49.0709},
-        13: {"lat": -27.7455, "lon": -49.9423},
-        14: {"lat": -28.3377, "lon": -49.6373},
-        15: {"lat": -26.7326, "lon": -52.3919},
-    }
-    cities_count = 15
+    # cities: Dict[int, Dict[str, float]] = {
+    #     1:  {"lat": -27.6126, "lon": -51.0233},
+    #     2:  {"lat": -26.5716, "lon": -52.3229},
+    #     3:  {"lat": -27.4087, "lon": -49.8220},
+    #     4:  {"lat": -27.2662, "lon": -49.7080},
+    #     5:  {"lat": -26.9985, "lon": -51.5528},
+    #     6:  {"lat": -27.0754, "lon": -52.9808},
+    #     7:  {"lat": -26.8794, "lon": -52.8568},
+    #     8:  {"lat": -27.6963, "lon": -48.8243},
+    #     9:  {"lat": -26.8430, "lon": -53.5758},
+    #     10: {"lat": -26.7810, "lon": -49.3593},
+    #     11: {"lat": -27.4960, "lon": -48.6598},
+    #     12: {"lat": -26.9155, "lon": -49.0709},
+    #     13: {"lat": -27.7455, "lon": -49.9423},
+    #     14: {"lat": -28.3377, "lon": -49.6373},
+    #     15: {"lat": -26.7326, "lon": -52.3919},
+    # }
+
+    cities: Dict[int, Dict[str, float]] = {}
+
+    print(settings.STATICFILES_DIRS[0])
+
+    with open(settings.STATICFILES_DIRS[0] / "world_country_and_usa_states_latitude_and_longitude_values.csv", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+
+        for idx, row in enumerate(reader, start=1):
+            # print(row["latitude"], row["longitude"])
+            lat = row["latitude"].strip()
+            lon = row["longitude"].strip()
+
+            if not lat or not lon:
+                continue  # datanya aneh sumpah
+
+            lat = float(lat)
+            lon = float(lon)
+
+            cities[idx] = {
+                "lat": lat,
+                "lon": lon
+            }
+
+    cities_count = len(cities)
     pop_size = 500
     generations = 20
     elite = 8
